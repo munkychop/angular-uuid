@@ -1,26 +1,33 @@
 {
-  "name"          : "node-uuid",
-  "description"   : "Rigorous implementation of RFC4122 (v1 and v4) UUIDs.",
-  "url"           : "http://github.com/broofa/node-uuid",
-  "keywords"      : ["uuid", "guid", "rfc4122"],
-  "author"        : "Robert Kieffer <robert@broofa.com>",
-  "contributors"  : [
-    {"name": "Christoph Tavan <dev@tavan.de>", "github": "https://github.com/ctavan"}
+  "name": "angular-uuid",
+  "title": "angular-uuid",
+  "description": "An AngularJS wrapper for a rigorous implementation of RFC4122 (v1 and v4) UUIDs.",
+  "version": "0.0.1",
+  "homepage": "https://github.com/munkychop/angular-uuid",
+  "author": {
+    "name": "Ivan Hayes",
+    "url": "http://www.ivanhayes.com"
+  },
+  "main": "angular-uuid.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/munkychop/angular-uuid.git"
+  },
+  "keywords": [
+    "angular",
+    "angularjs",
+    "angular-uuid",
+    "uuid",
+    "guid",
+    "rfc4122",
+    "javascript",
+    "library"
   ],
-  "bin": {
-    "uuid": "./bin/uuid"
-  },
-  "scripts": {
-    "test": "node test/test.js"
-  },
-  "lib"           : ".",
-  "main"          : "./uuid.js",
-  "repository"    : { "type" : "git", "url" : "https://github.com/broofa/node-uuid.git" },
-  "version"       : "1.4.2",
+  "private": false,
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://raw.github.com/broofa/node-uuid/master/LICENSE.md"
+      "url": "https://github.com/munkychop/angular-uuid/blob/master/LICENSE"
     }
   ]
 }
