@@ -14,7 +14,7 @@ angular-uuid is an AngularJS wrapper for Robert Kieffer's [node-uuid](https://gi
 If using CommonJS then simply require angular-uuid as per usual, prior to setting up your AngularJS modules (but after including angular):
 
 ```
-npm install node-uuid
+npm install --save angular-uuid
 ```
 
 ```javascript
