@@ -2,7 +2,7 @@
   "name": "angular-uuid",
   "title": "angular-uuid",
   "description": "An AngularJS wrapper for a rigorous implementation of RFC4122 (v1 and v4) UUIDs.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://github.com/munkychop/angular-uuid",
   "author": {
     "name": "Ivan Hayes",
