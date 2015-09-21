@@ -29,20 +29,20 @@ Otherwise use a regular script tag (after including angular):
 
 ### Angular Module Usage
 
-Ensure that you include *angular-uuid* in your module definition:
+Ensure that you include *uuid* in your module definition:
 
 ```javascript
-var CoolApp = angular.module("CoolApp", ["angular-uuid"]);
+var CoolApp = angular.module("CoolApp", ["uuid"]);
 ```
 
-You can then inject *uuid* where necessary, for example:
+You can then inject *uuid4* where necessary, for example:
 
 ```javascript
-CoolApp.controller("MainCtrl", ["uuid", MainCtrl]);
+CoolApp.controller("MainCtrl", ["uuid4", MainCtrl]);
 
-function MainCtrl (uuid)
+function MainCtrl (uuid4)
 {
-    var hash = uuid.v4();
+    var hash = uuid4.generate();
     console.log(hash);
 }
 ```
