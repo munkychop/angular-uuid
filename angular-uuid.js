@@ -4,39 +4,34 @@
 //    This is an AngularJS wrapper for the original node-uuid library
 //    written by Robert Kieffer – https://github.com/broofa/node-uuid
 //    MIT License - http://opensource.org/licenses/mit-license.php
+//    The wrapped node-uuid library is at version 1.4.7
 
-function AngularUUID ()
-{
-  angular.module("angular-uuid",[]).factory("uuid", ["$window", uuid]);
+function AngularUUID () {
+  'use strict';
 
-  function uuid ($window)
-  {
-    var _global = $window;
+  angular.module('angular-uuid',[]).factory('uuid', ['$window', nodeUUID]);
 
+  function nodeUUID ($window) {
     // Unique ID creation requires a high quality random # generator.  We feature
     // detect to determine the best RNG source, normalizing to a function that
     // returns 128-bits of randomness, since that's what's usually required
-    var _rng;
+    var _rng, _mathRNG, _whatwgRNG;
 
-    // Node.js crypto-based RNG - http://nodejs.org/docs/v0.6.2/api/crypto.html
-    //
-    // Moderately fast, high quality
-    if (typeof(_global.require) == 'function') {
-      try {
-        var _rb = _global.require('crypto').randomBytes;
-        _rng = _rb && function() {return _rb(16);};
-      } catch(e) {}
-    }
+    // Allow for MSIE11 msCrypto
+    var _crypto = $window.crypto || $window.msCrypto;
 
-    if (!_rng && _global.crypto && crypto.getRandomValues) {
+    if (!_rng && _crypto && _crypto.getRandomValues) {
       // WHATWG crypto-based RNG - http://wiki.whatwg.org/wiki/Crypto
       //
       // Moderately fast, high quality
-      var _rnds8 = new Uint8Array(16);
-      _rng = function whatwgRNG() {
-        crypto.getRandomValues(_rnds8);
-        return _rnds8;
-      };
+      try {
+        var _rnds8 = new Uint8Array(16);
+        _whatwgRNG = _rng = function whatwgRNG() {
+          _crypto.getRandomValues(_rnds8);
+          return _rnds8;
+        };
+        _rng();
+      } catch(e) {}
     }
 
     if (!_rng) {
@@ -45,18 +40,21 @@ function AngularUUID ()
       // If all else fails, use Math.random().  It's fast, but is of unspecified
       // quality.
       var  _rnds = new Array(16);
-      _rng = function() {
+      _mathRNG = _rng = function() {
         for (var i = 0, r; i < 16; i++) {
-          if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+          if ((i & 0x03) === 0) { r = Math.random() * 0x100000000; }
           _rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
         }
 
         return _rnds;
       };
+      if ('undefined' !== typeof console && console.warn) {
+        console.warn('[SECURITY] node-uuid: crypto not usable, falling back to insecure Math.random()');
+      }
     }
 
     // Buffer class to use
-    var BufferClass = typeof(_global.Buffer) == 'function' ? _global.Buffer : Array;
+    var BufferClass = ('function' === typeof Buffer) ? Buffer : Array;
 
     // Maps for number <-> hex string conversion
     var _byteToHex = [];
@@ -74,8 +72,8 @@ function AngularUUID ()
       s.toLowerCase().replace(/[0-9a-f]{2}/g, function(oct) {
         if (ii < 16) { // Don't overflow!
           buf[i + ii++] = _hexToByte[oct];
-      }
-    });
+        }
+      });
 
       // Zero out remaining bytes if string was short
       while (ii < 16) {
@@ -89,13 +87,13 @@ function AngularUUID ()
     function unparse(buf, offset) {
       var i = offset || 0, bth = _byteToHex;
       return  bth[buf[i++]] + bth[buf[i++]] +
-      bth[buf[i++]] + bth[buf[i++]] + '-' +
-      bth[buf[i++]] + bth[buf[i++]] + '-' +
-      bth[buf[i++]] + bth[buf[i++]] + '-' +
-      bth[buf[i++]] + bth[buf[i++]] + '-' +
-      bth[buf[i++]] + bth[buf[i++]] +
-      bth[buf[i++]] + bth[buf[i++]] +
-      bth[buf[i++]] + bth[buf[i++]];
+              bth[buf[i++]] + bth[buf[i++]] + '-' +
+              bth[buf[i++]] + bth[buf[i++]] + '-' +
+              bth[buf[i++]] + bth[buf[i++]] + '-' +
+              bth[buf[i++]] + bth[buf[i++]] + '-' +
+              bth[buf[i++]] + bth[buf[i++]] +
+              bth[buf[i++]] + bth[buf[i++]] +
+              bth[buf[i++]] + bth[buf[i++]];
     }
 
     // **`v1()` - Generate time-based UUID**
@@ -108,8 +106,8 @@ function AngularUUID ()
 
     // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
     var _nodeId = [
-    _seedBytes[0] | 0x01,
-    _seedBytes[1], _seedBytes[2], _seedBytes[3], _seedBytes[4], _seedBytes[5]
+      _seedBytes[0] | 0x01,
+      _seedBytes[1], _seedBytes[2], _seedBytes[3], _seedBytes[4], _seedBytes[5]
     ];
 
     // Per 4.2.2, randomize (14 bit) clockseq
@@ -125,17 +123,17 @@ function AngularUUID ()
 
       options = options || {};
 
-      var clockseq = options.clockseq != null ? options.clockseq : _clockseq;
+      var clockseq = (options.clockseq != null) ? options.clockseq : _clockseq;
 
       // UUID timestamps are 100 nano-second units since the Gregorian epoch,
       // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
       // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
       // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
-      var msecs = options.msecs != null ? options.msecs : new Date().getTime();
+      var msecs = (options.msecs != null) ? options.msecs : new Date().getTime();
 
       // Per 4.2.1.2, use count of uuid's generated during the current clock
       // cycle to simulate higher resolution clock
-      var nsecs = options.nsecs != null ? options.nsecs : _lastNSecs + 1;
+      var nsecs = (options.nsecs != null) ? options.nsecs : _lastNSecs + 1;
 
       // Time since last uuid creation (in msecs)
       var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
@@ -201,8 +199,8 @@ function AngularUUID ()
       // Deprecated - 'format' argument, as supported in v1.2
       var i = buf && offset || 0;
 
-      if (typeof(options) == 'string') {
-        buf = options == 'binary' ? new BufferClass(16) : null;
+      if (typeof(options) === 'string') {
+        buf = (options === 'binary') ? new BufferClass(16) : null;
         options = null;
       }
       options = options || {};
@@ -224,31 +222,30 @@ function AngularUUID ()
     }
 
     // Export public API
-    var publicAPI = v4;
-    publicAPI.v1 = v1;
-    publicAPI.v4 = v4;
-    publicAPI.parse = parse;
-    publicAPI.unparse = unparse;
-    publicAPI.BufferClass = BufferClass;
+    var uuid = v4;
+    uuid.v1 = v1;
+    uuid.v4 = v4;
+    uuid.parse = parse;
+    uuid.unparse = unparse;
+    uuid.BufferClass = BufferClass;
+    uuid._rng = _rng;
+    uuid._mathRNG = _mathRNG;
+    uuid._whatwgRNG = _whatwgRNG;
 
-    return publicAPI;
+    return uuid;
   }
 }
 
 // check for Module/AMD support, otherwise call the uuid function to setup the angular module.
-if (typeof module !== "undefined" && module.exports)
-{
+if (typeof module !== 'undefined' && module.exports) {
   module.exports = new AngularUUID();
-}
-else if (typeof define !== "undefined" && define.amd)
-{
+
+} else if (typeof define !== 'undefined' && define.amd) {
   // AMD. Register as an anonymous module.
-  define (function()
-  {
+  define (function() {
     return new AngularUUID();
   });
-}
-else
-{
+  
+} else {
   AngularUUID();
 }
